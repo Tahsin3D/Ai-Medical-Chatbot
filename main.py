@@ -4,18 +4,22 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-def get_response(user_query):
+async def process_query(user_query):
     retrieved_docs = retriever.invoke(user_query)
     return chain.invoke({"input": user_query, "context": retrieved_docs}).content
 
+# Root Route
+@app.get("/")
+async def root():
+    return {"message": "AI Medical Chatbot is running!"}
 
 # Define input model
 class QueryRequest(BaseModel):
     query: str
 
 @app.post("/query")
-async def get_response(request: QueryRequest):
-    chatbot_response = get_response(request.query)
+async def query_endpoint(request: QueryRequest):
+    chatbot_response = await process_query(request.query)
     return {"response": chatbot_response}
 
 
